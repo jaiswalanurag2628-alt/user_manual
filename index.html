@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SchoolMitra User Manual &amp; Release Guide Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #2563eb;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .drop-zone.drag-over,
+    .drop-zone:focus {
+      border-color: var(--accent);
+      background-color: #eff6ff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+    }
+    .a4-sheet {
+      width: 210mm;
+      max-width: 100%;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 5mm !important;
+      box-sizing: border-box;
+      background: #ffffff;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #1e293b;
+    }
+    .avoid-break {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      main, #previewPane {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+      }
+      #a4PreviewSheet {
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: auto !important;
+        padding: 5mm !important;
+        margin: 0 auto !important;
+        transform: none !important;
+      }
+      .doc-step-card, .avoid-break {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
+
+  <!-- CLEAN TOP HEADER -->
+  <header class="no-print bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30 shadow-xs">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shrink-0">
+        <i data-lucide="sparkles" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">SchoolMitra Instant Manual Builder</h1>
+          <span class="hidden sm:inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md">Screenshot &rarr; Word/PDF</span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-600 hidden sm:block">Drop screenshots + type 2–3 lines &rarr; Auto-generates complete client-ready user manual</p>
+      </div>
+    </div>
+
+    <!-- RIGHT EXPORT ACTIONS -->
+    <div class="flex flex-wrap items-center gap-2">
+      <button type="button" onclick="resetWorkspace()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200/70 flex items-center gap-1.5 transition-colors cursor-pointer">
+        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        <span>New Manual</span>
+      </button>
+
+      <button type="button" onclick="exportToWordDoc()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer">
+        <i data-lucide="file-text" class="w-4 h-4"></i>
+        <span>Download Word (.doc)</span>
+      </button>
+
+      <button type="button" id="btnDownloadPdf" onclick="exportToPdfFile()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer">
+        <i data-lucide="download" class="w-4 h-4"></i>
+        <span>Download PDF (.pdf)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MOBILE TAB SWITCHER -->
+  <div class="no-print lg:hidden bg-slate-200/80 p-1.5 flex gap-1.5 border-b border-slate-300">
+    <button type="button" id="btnMobileEditor" onclick="switchMobileTab('editor')" class="flex-1 py-2 rounded-lg text-sm font-bold bg-white text-slate-900 shadow-xs">
+      1. Upload &amp; Generate
+    </button>
+    <button type="button" id="btnMobilePreview" onclick="switchMobileTab('preview')" class="flex-1 py-2 rounded-lg text-sm font-bold text-slate-600">
+      2. Ready User Manual
+    </button>
+  </div>
+
+  <!-- MAIN DUAL-PANE WORKSPACE -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+    <!-- LEFT PANEL: ULTRA-SIMPLE 2-STEP INPUT -->
+    <div id="editorPane" class="no-print w-full lg:w-[44%] xl:w-[42%] bg-slate-50 border-r border-slate-200 overflow-y-auto p-4 sm:p-6 space-y-5">
+
+      <!-- STEP 1: DROP / PASTE SCREENSHOTS -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-extrabold flex items-center justify-center">1</span>
+            <h2 class="text-base font-extrabold text-slate-900">Upload or Paste Screenshots</h2>
+          </div>
+          <span id="shotBadge" class="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full">0 Screenshots</span>
+        </div>
+
+        <!-- BIG EASY DROPZONE -->
+        <div tabindex="0"
+             onpaste="handleGlobalPaste(event)"
+             ondragover="event.preventDefault(); this.classList.add('drag-over');"
+             ondragleave="this.classList.remove('drag-over');"
+             ondrop="handleGlobalDrop(event)"
+             class="drop-zone rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50/40 p-6 text-center transition-all cursor-pointer focus:outline-none">
+          <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-sm">
+            <i data-lucide="image-plus" class="w-6 h-6"></i>
+          </div>
+          <p class="text-base font-bold text-slate-900">Drop screenshots here or press <kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-xs">Ctrl + V</kbd></p>
+          <p class="text-sm text-slate-600 mt-1 mb-3.5">Upload 1 or multiple ERP screens in order</p>
+          <label class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-xs cursor-pointer transition-colors">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            <span>Choose Screenshots from Device</span>
+            <input type="file" accept="image/*" multiple onchange="handleFileInput(this.files)" class="hidden" />
+          </label>
+        </div>
+
+        <!-- UPLOADED THUMBNAIL STRIP -->
+        <div id="screenshotsList" class="space-y-2.5"></div>
+      </div>
+
+      <!-- STEP 2: 2-3 LINE INSTRUCTION & GENERATE -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-extrabold flex items-center justify-center">2</span>
+          <h2 class="text-base font-extrabold text-slate-900">Write 2–3 Lines &amp; Generate Manual</h2>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-slate-800 mb-1.5">What is this module &amp; what should the user do? (2–3 lines)</label>
+          <textarea id="shortInstructionInput" rows="3" oninput="saveQuickInputs()" placeholder="Example: This is the new Inventory Stock Adjustment screen. Store keeper selects the store location, enters damaged or excess item quantities with remarks, and submits to update stock balance." class="w-full p-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 leading-relaxed text-slate-900"></textarea>
+        </div>
+
+        <!-- CLIENT SCHOOL QUICK PICKER -->
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1.5">
+            <label class="text-sm font-bold text-slate-800">Client School Name (Optional)</label>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" onclick="setSchoolPreset('SchoolMitra Client Schools')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">All Schools</button>
+              <button type="button" onclick="setSchoolPreset('R.D. Public School, Betul')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 cursor-pointer">R.D. Public School</button>
+              <button type="button" onclick="setSchoolPreset('Mirza Anwar Baig Inter College')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 cursor-pointer">Mirza Anwar Baig</button>
+            </div>
+          </div>
+          <input type="text" id="schoolNameInput" oninput="saveQuickInputs()" value="SchoolMitra Client Schools" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500 font-medium text-slate-900" />
+        </div>
+
+        <!-- BIG GENERATE BUTTON -->
+        <button type="button" id="btnGenerateManual" onclick="generateSmartManual()" class="w-full py-3.5 px-4 rounded-xl text-base font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60">
+          <i data-lucide="wand-2" class="w-5 h-5"></i>
+          <span>Generate Complete User Manual</span>
+        </button>
+
+        <!-- LOADING STATUS -->
+        <div id="generatingStatus" class="hidden bg-indigo-50 border border-indigo-200 rounded-xl p-3.5 flex items-center gap-3 text-sm text-indigo-900 font-semibold">
+          <div class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
+          <span id="generatingStatusText">Reading UI fields, buttons &amp; menus from your screenshot...</span>
+        </div>
+
+        <!-- OPTIONAL API KEY COLLAPSIBLE (ONLY IF NEEDED LOCALLY) -->
+        <details class="pt-1 text-sm text-slate-600">
+          <summary class="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 select-none">Optional: Custom Gemini API Key (for GitHub Pages / Offline use)</summary>
+          <div class="mt-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <p class="text-xs text-slate-600 leading-relaxed">If running outside Canvas (e.g., on GitHub Pages), paste your free <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="text-blue-600 underline font-semibold">Google AI Studio Key</a> once so it reads every button &amp; table inside your screenshots automatically.</p>
+            <input type="password" id="customApiKeyInput" oninput="saveCustomKey(this.value)" placeholder="AIzaSy... (Saved automatically in your browser)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 font-mono-code bg-white" />
+          </div>
+        </details>
+      </div>
+
+      <!-- FINE-TUNE GENERATED TEXT (COLLAPSED BY DEFAULT SO UI STAYS CLEAN) -->
+      <details id="fineTuneDrawer" class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <summary class="px-5 py-4 text-sm font-extrabold text-slate-800 cursor-pointer hover:bg-slate-50 flex items-center justify-between select-none">
+          <span class="flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-slate-600"></i>
+            <span>Fine-Tune Generated Text &amp; Steps (Optional)</span>
+          </span>
+          <span class="text-xs font-medium text-slate-500">Click to expand</span>
+        </summary>
+        <div id="fineTuneEditorBody" class="p-4 border-t border-slate-100 space-y-4"></div>
+      </details>
+
+    </div>
+
+    <!-- RIGHT PANEL: READY-TO-FORWARD A4 USER MANUAL -->
+    <div id="previewPane" class="hidden lg:flex flex-col flex-1 bg-slate-200/80 overflow-y-auto p-4 sm:p-6 items-center">
+      <div class="no-print w-full max-w-[210mm] mx-auto mb-3 flex flex-wrap items-center justify-between gap-2 bg-white/95 px-4 py-3 rounded-xl border border-slate-300/80 shadow-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span class="text-sm font-extrabold text-slate-800">Ready-to-Forward User Manual (A4 Aligned)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="exportToWordDoc()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 cursor-pointer">
+            .DOC
+          </button>
+          <button type="button" onclick="exportToPdfFile()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 cursor-pointer">
+            .PDF
+          </button>
+          <select onchange="setPreviewZoom(this.value)" class="text-xs font-semibold border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white">
+            <option value="0.85">85%</option>
+            <option value="0.95">95%</option>
+            <option value="1" selected>100% (Crisp)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- A4 DOCUMENT SHEET -->
+      <div id="a4Wrapper" class="w-full flex justify-center pb-10">
+        <div id="a4PreviewSheet" class="a4-sheet bg-white shadow-xl rounded-sm border border-slate-300/70 transition-transform" style="padding: 5mm; transform: scale(1); transform-origin: top center;"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- TOAST MESSAGE -->
+  <div id="toastBox" class="no-print hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-sm font-semibold">
+    <i id="toastIcon" data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+    <span id="toastMessage">Done</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // STATE & STORAGE
+    // =========================================================================
+    const STORAGE_KEY = 'schoolmitra_simple_manual_v2';
+    const KEY_STORAGE = 'schoolmitra_gemini_key_v2';
+
+    const DEFAULT_STATE = {
+      shortInstruction: '',
+      schoolName: 'SchoolMitra Client Schools',
+      preparedBy: 'Anurag Jaiswal',
+      versionDate: 'v1.0 • November 2026',
+      screenshots: [], // { id, name, image, note }
+      manual: {
+        moduleName: 'SchoolMitra ERP Module User Guide',
+        docType: 'USER MANUAL & STANDARD OPERATING PROCEDURE',
+        audience: 'School Admin, Staff & Operators',
+        overview: 'Upload your SchoolMitra ERP screenshots on the left and enter 2–3 lines describing the screen. Click "Generate Complete User Manual" to automatically extract all form fields, navigation paths, and step-by-step instructions.',
+        highlights: [
+          'Auto-extracted screen fields, buttons, and validation rules',
+          'Step-by-step visual walkthrough ready for school staff training'
+        ],
+        permissions: [
+          { role: 'School Admin / Operator', access: 'Authorized Module Access in SchoolMitra ERP' }
+        ],
+        steps: [],
+        notes: [
+          'Ensure all mandatory fields marked with (*) are filled before clicking Save.'
+        ]
+      }
+    };
+
+    let appState = null;
+
+    window.onload = function () {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        appState = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_STATE));
+      } catch (e) {
+        appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+
+      const savedKey = localStorage.getItem(KEY_STORAGE) || '';
+      const keyEl = document.getElementById('customApiKeyInput');
+      if (keyEl) keyEl.value = savedKey;
+
+      const instEl = document.getElementById('shortInstructionInput');
+      if (instEl) instEl.value = appState.shortInstruction || '';
+
+      const schoolEl = document.getElementById('schoolNameInput');
+      if (schoolEl) schoolEl.value = appState.schoolName || 'SchoolMitra Client Schools';
+
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      renderA4Preview();
+      refreshIcons();
+    };
+
+    function refreshIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        try { window.lucide.createIcons(); } catch (e) {}
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        showToast('Browser storage full—download your Word (.doc) file now!', 'warning');
+      }
+      renderA4Preview();
+    }
+
+    function saveCustomKey(val) {
+      localStorage.setItem(KEY_STORAGE, (val || '').trim());
+    }
+
+    function saveQuickInputs() {
+      const instEl = document.getElementById('shortInstructionInput');
+      const schoolEl = document.getElementById('schoolNameInput');
+      if (instEl) appState.shortInstruction = instEl.value;
+      if (schoolEl) appState.schoolName = schoolEl.value;
+      saveState();
+    }
+
+    function setSchoolPreset(name) {
+      appState.schoolName = name;
+      const schoolEl = document.getElementById('schoolNameInput');
+      if (schoolEl) schoolEl.value = name;
+      saveState();
+      showToast(`Client set to ${name}`);
+    }
+
+    function resetWorkspace() {
+      appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      const instEl = document.getElementById('shortInstructionInput');
+      const schoolEl = document.getElementById('schoolNameInput');
+      if (instEl) instEl.value = '';
+      if (schoolEl) schoolEl.value = appState.schoolName;
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      saveState();
+      showToast('Started a fresh manual');
+    }
+
+    // =========================================================================
+    // SCREENSHOT UPLOAD, DRAG-DROP & CTRL+V PASTE
+    // =========================================================================
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function compressImage(dataUrl, maxWidth = 1400, quality = 0.85) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function () {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxWidth) {
+            h = Math.round((h * maxWidth) / w);
+            w = maxWidth;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
+    }
+
+    async function addScreenshotFiles(fileList) {
+      const files = Array.from(fileList || []).filter((f) => f && f.type && f.type.startsWith('image/'));
+      if (!files.length) {
+        showToast('Please select or paste an image screenshot.', 'warning');
+        return;
+      }
+
+      files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+      for (let i = 0; i < files.length; i++) {
+        const raw = await readFileAsDataUrl(files[i]);
+        const compressed = await compressImage(raw, 1400, 0.85);
+        appState.screenshots.push({
+          id: 'shot_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          name: files[i].name || `Screen ${appState.screenshots.length + 1}`,
+          image: compressed,
+          note: ''
+        });
+      }
+
+      // Immediately reflect screenshots in preview even before clicking Generate
+      syncScreenshotsToDraftSteps();
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      saveState();
+      showToast(`Added ${files.length} screenshot(s)!`);
+    }
+
+    function handleFileInput(files) {
+      addScreenshotFiles(files);
+    }
+
+    function handleGlobalDrop(event) {
+      event.preventDefault();
+      event.currentTarget.classList.remove('drag-over');
+      if (event.dataTransfer && event.dataTransfer.files) {
+        addScreenshotFiles(event.dataTransfer.files);
+      }
+    }
+
+    function handleGlobalPaste(event) {
+      const items = (event.clipboardData || (event.originalEvent && event.originalEvent.clipboardData) || {}).items || [];
+      const imgs = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) imgs.push(file);
+        }
+      }
+      if (imgs.length > 0) {
+        event.preventDefault();
+        addScreenshotFiles(imgs);
+      }
+    }
+
+    function removeScreenshot(idx) {
+      appState.screenshots.splice(idx, 1);
+      syncScreenshotsToDraftSteps();
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      saveState();
+    }
+
+    function moveScreenshot(idx, dir) {
+      const target = idx + dir;
+      if (target < 0 || target >= appState.screenshots.length) return;
+      const tmp = appState.screenshots[idx];
+      appState.screenshots[idx] = appState.screenshots[target];
+      appState.screenshots[target] = tmp;
+      syncScreenshotsToDraftSteps();
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      saveState();
+    }
+
+    function updateScreenshotNote(idx, val) {
+      appState.screenshots[idx].note = val;
+      saveState();
+    }
+
+    function syncScreenshotsToDraftSteps() {
+      if (appState.manual.steps.length === 0 && appState.screenshots.length > 0) {
+        appState.manual.steps = appState.screenshots.map((s, idx) => ({
+          title: `Screen ${idx + 1}: Operation Overview`,
+          navPath: 'SchoolMitra ERP > Module Screen',
+          instructions: s.note || appState.shortInstruction || 'Review the fields shown on this screen, fill the required inputs, and click Save.',
+          fields: [],
+          tip: '',
+          image: s.image,
+          caption: `Figure ${idx + 1}: ERP Screen View`
+        }));
+      }
+    }
+
+    function renderScreenshotsList() {
+      const list = document.getElementById('screenshotsList');
+      const badge = document.getElementById('shotBadge');
+      if (badge) badge.textContent = `${appState.screenshots.length} Screenshot${appState.screenshots.length === 1 ? '' : 's'}`;
+      if (!list) return;
+
+      if (appState.screenshots.length === 0) {
+        list.innerHTML = '';
+        return;
+      }
+
+      list.innerHTML = appState.screenshots.map((s, idx) => `
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="relative w-16 h-12 rounded-lg overflow-hidden border border-slate-300 bg-white shrink-0">
+            <img src="${s.image}" alt="Screen ${idx + 1}" class="w-full h-full object-cover" />
+            <span class="absolute top-0.5 left-0.5 bg-slate-900/85 text-white text-[10px] font-bold px-1.5 rounded">${idx + 1}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-slate-800 truncate">Screen ${idx + 1}</div>
+            <input type="text" value="${escapeHtml(s.note)}" oninput="updateScreenshotNote(${idx}, this.value)" placeholder="Optional quick hint for this screen..." class="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-blue-500 text-slate-900" />
+          </div>
+          <div class="flex flex-col gap-0.5 shrink-0">
+            <button type="button" onclick="moveScreenshot(${idx}, -1)" title="Move Up" class="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
+            <button type="button" onclick="moveScreenshot(${idx}, 1)" title="Move Down" class="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+          </div>
+          <button type="button" onclick="removeScreenshot(${idx})" title="Remove" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </div>
+      `).join('');
+
+      refreshIcons();
+    }
+
+    // =========================================================================
+    // AI VISION GENERATOR (READS SCREENSHOT DATA + 2-3 LINE INSTRUCTION)
+    // =========================================================================
+    async function generateSmartManual() {
+      const shots = appState.screenshots;
+      const userPrompt = (document.getElementById('shortInstructionInput').value || '').trim();
+
+      if (shots.length === 0 && !userPrompt) {
+        showToast('Please upload at least 1 screenshot or write 2–3 lines of instructions.', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btnGenerateManual');
+      const statusBox = document.getElementById('generatingStatus');
+      const statusText = document.getElementById('generatingStatusText');
+
+      btn.disabled = true;
+      statusBox.classList.remove('hidden');
+      statusText.textContent = shots.length > 0
+        ? `Inspecting ${shots.length} screenshot(s), reading fields & buttons, and writing your user manual...`
+        : 'Generating structured SchoolMitra user manual from your instructions...';
+
+      const customKey = (localStorage.getItem(KEY_STORAGE) || '').trim();
+      const apiKey = customKey || '';
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+      const parts = [
+        {
+          text: `You are an expert ERP Technical Writer for SchoolMitra ERP.
+Look closely at the uploaded screenshot(s) (read every menu path, page title, form input label, dropdown, table column, status badge, and action button visible inside the image) AND combine it with the user's 2-3 line instruction below to create a thorough, client-ready User Manual.
+
+User's 2-3 Line Instruction:
+"${userPrompt || 'Create a complete step-by-step user manual based on the UI elements visible in the screenshots.'}"
+
+Per-Screenshot Hints:
+${shots.map((s, i) => `Screen ${i + 1}: ${s.note || 'Extract details directly from screenshot'}`).join('\n')}
+
+Client School: ${appState.schoolName || 'SchoolMitra Client Schools'}
+
+Return ONLY valid JSON matching this exact schema:
+{
+  "moduleName": "Official, clear Module Title inferred from screenshot & instructions",
+  "docType": "USER MANUAL & STANDARD OPERATING PROCEDURE",
+  "audience": "Exact school staff roles (e.g., Store Keeper, Accountant, Class Teacher, Admin)",
+  "overview": "A well-written 3-4 sentence executive overview explaining what this screen/module does and how it helps the school.",
+  "highlights": [
+    "Key capability 1 visible in the screen",
+    "Key capability 2 visible in the screen",
+    "Key capability 3"
+  ],
+  "permissions": [
+    {"role": "Primary User Role", "access": "Required menu/module permission in SchoolMitra"}
+  ],
+  "steps": [
+    {
+      "title": "Action-oriented step title for this screenshot",
+      "navPath": "Exact breadcrumb or menu navigation seen on screen (e.g., Inventory > Transactions > Stock Adjustment)",
+      "instructions": "Detailed, easy-to-follow 3-5 sentence step-by-step guide referencing the exact field names and buttons visible in the screenshot. Wrap button/field names in **bold**.",
+      "fields": [
+        {"name": "Exact Field/Column Name from Screenshot", "required": "Mandatory or Optional or Auto-Filled", "desc": "Clear explanation of what data to enter or select"}
+      ],
+      "tip": "Practical pro-tip or validation caution relevant to this screen",
+      "caption": "Figure 1: Descriptive title of the screenshot"
+    }
+  ],
+  "notes": [
+    "Important operational rule or troubleshooting tip 1",
+    "Important operational rule or troubleshooting tip 2"
+  ]
+}`
+        }
+      ];
+
+      shots.forEach((s, idx) => {
+        const match = s.image.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+        if (match) {
+          parts.push({ text: `Screenshot ${idx + 1}:` });
+          parts.push({
+            inlineData: {
+              mimeType: match[1],
+              data: match[2]
+            }
+          });
+        }
+      });
+
+      const payload = {
+        contents: [{ parts }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: 'application/json'
+        }
+      };
+
+      try {
+        const result = await fetchWithBackoff(apiUrl, payload);
+        const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const fenceStart = new RegExp('^' + '`'.repeat(3) + 'json\\s*', 'i');
+        const fenceEnd = new RegExp('\\s*' + '`'.repeat(3) + '$');
+        const cleanJson = rawText.replace(fenceStart, '').replace(fenceEnd, '').trim();
+        const parsed = JSON.parse(cleanJson);
+
+        // Attach original screenshots back onto generated steps
+        const generatedSteps = Array.isArray(parsed.steps) ? parsed.steps : [];
+        const mergedSteps = [];
+
+        const maxLen = Math.max(shots.length, generatedSteps.length);
+        for (let i = 0; i < maxLen; i++) {
+          const aiStep = generatedSteps[i] || {};
+          const shot = shots[i] || null;
+          mergedSteps.push({
+            title: aiStep.title || `Step ${i + 1}: Screen Operation`,
+            navPath: aiStep.navPath || 'SchoolMitra ERP > Module Screen',
+            instructions: aiStep.instructions || userPrompt || 'Complete the form fields and click Save.',
+            fields: Array.isArray(aiStep.fields) ? aiStep.fields : [],
+            tip: aiStep.tip || '',
+            image: shot ? shot.image : '',
+            caption: aiStep.caption || `Figure ${i + 1}: Screen View`
+          });
+        }
+
+        appState.manual = {
+          moduleName: parsed.moduleName || 'SchoolMitra Module User Guide',
+          docType: parsed.docType || 'USER MANUAL & STANDARD OPERATING PROCEDURE',
+          audience: parsed.audience || 'School Admin & Staff',
+          overview: parsed.overview || userPrompt,
+          highlights: Array.isArray(parsed.highlights) && parsed.highlights.length ? parsed.highlights : ['Streamlined workflow with built-in validation'],
+          permissions: Array.isArray(parsed.permissions) && parsed.permissions.length ? parsed.permissions : [{ role: 'School Admin', access: 'Module Access Enabled' }],
+          steps: mergedSteps,
+          notes: Array.isArray(parsed.notes) && parsed.notes.length ? parsed.notes : ['Verify all mandatory (*) fields before saving.']
+        };
+
+        renderFineTuneEditor();
+        saveState();
+        showToast('User manual generated! Ready to download as Word (.doc) or PDF.');
+
+        // On mobile, switch straight to the generated preview
+        if (window.innerWidth < 1024) {
+          switchMobileTab('preview');
+        }
+      } catch (err) {
+        console.warn('Falling back to smart local structuring:', err);
+        buildLocalFallbackManual(userPrompt, shots);
+        showToast('Created structured manual! (Tip: Add a free Gemini API key in Optional settings for full OCR field extraction)', 'warning');
+      } finally {
+        btn.disabled = false;
+        statusBox.classList.add('hidden');
+      }
+    }
+
+    async function fetchWithBackoff(url, payload, retries = 3) {
+      let delay = 1000;
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) {
+            if (res.status === 429 && attempt < retries) {
+              await new Promise((r) => setTimeout(r, delay));
+              delay *= 2;
+              continue;
+            }
+            throw new Error(`HTTP ${res.status}`);
+          }
+          return await res.json();
+        } catch (e) {
+          if (attempt === retries) throw e;
+          await new Promise((r) => setTimeout(r, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    function buildLocalFallbackManual(userPrompt, shots) {
+      const sentences = (userPrompt || 'Open the module screen, fill in the required fields, and click Save to record the entry.')
+        .split(/(?<=[.!?])\s+/)
+        .filter(Boolean);
+
+      const titleGuess = sentences[0]
+        ? sentences[0].replace(/^(this is|here is|in this)\s+/i, '').slice(0, 65).replace(/[.!?]+$/, '')
+        : 'SchoolMitra ERP Module Guide';
+
+      const steps = (shots.length > 0 ? shots : [{ image: '', note: '' }]).map((s, idx) => ({
+        title: `Step ${idx + 1}: ${s.note || titleGuess}`,
+        navPath: 'SchoolMitra ERP > Admin > Module Screen',
+        instructions: s.note || sentences[idx] || userPrompt || 'Enter all mandatory fields shown on the screen and click Save.',
+        fields: [],
+        tip: 'Verify entered values carefully before submitting.',
+        image: s.image || '',
+        caption: `Figure ${idx + 1}: ${s.note || 'Module Interface'}`
+      }));
+
+      appState.manual = {
+        moduleName: titleGuess,
+        docType: 'USER MANUAL & RELEASE GUIDE',
+        audience: 'School Admin, Staff & Operators',
+        overview: userPrompt || 'This guide explains how school staff can operate this module smoothly in SchoolMitra ERP.',
+        highlights: [
+          'Simple step-by-step operational workflow',
+          'Real-time record validation and audit trail'
+        ],
+        permissions: [
+          { role: 'Authorized Staff / Admin', access: 'Module View & Entry Permission' }
+        ],
+        steps,
+        notes: [
+          'Ensure all mandatory fields marked with (*) are completed before saving.'
+        ]
+      };
+
+      renderFineTuneEditor();
+      saveState();
+    }
+
+    // =========================================================================
+    // OPTIONAL FINE-TUNE EDITOR (HIDDEN UNTIL EXPANDED)
+    // =========================================================================
+    function updateManualField(key, val) {
+      appState.manual[key] = val;
+      saveState();
+    }
+
+    function updateStepField(idx, key, val) {
+      if (appState.manual.steps[idx]) {
+        appState.manual.steps[idx][key] = val;
+        saveState();
+      }
+    }
+
+    function renderFineTuneEditor() {
+      const body = document.getElementById('fineTuneEditorBody');
+      if (!body) return;
+      const m = appState.manual;
+
+      body.innerHTML = `
+        <div class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Manual Title</label>
+            <input type="text" value="${escapeHtml(m.moduleName)}" oninput="updateManualField('moduleName', this.value)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 font-semibold text-slate-900" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Target Audience</label>
+            <input type="text" value="${escapeHtml(m.audience)}" oninput="updateManualField('audience', this.value)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 text-slate-900" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Module Overview</label>
+            <textarea rows="3" oninput="updateManualField('overview', this.value)" class="w-full p-2.5 text-sm rounded-lg border border-slate-300 leading-relaxed text-slate-900">${escapeHtml(m.overview)}</textarea>
+          </div>
+          ${(m.steps || []).map((stp, idx) => `
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+              <div class="text-xs font-extrabold text-blue-700">Step ${idx + 1}</div>
+              <input type="text" value="${escapeHtml(stp.title)}" oninput="updateStepField(${idx}, 'title', this.value)" class="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-slate-300 bg-white text-slate-900" />
+              <input type="text" value="${escapeHtml(stp.navPath)}" oninput="updateStepField(${idx}, 'navPath', this.value)" placeholder="Navigation path" class="w-full px-3 py-1.5 text-xs font-mono-code rounded-lg border border-slate-300 bg-white text-slate-800" />
+              <textarea rows="3" oninput="updateStepField(${idx}, 'instructions', this.value)" class="w-full p-2.5 text-sm rounded-lg border border-slate-300 bg-white leading-relaxed text-slate-900">${escapeHtml(stp.instructions)}</textarea>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // LIVE A4 PREVIEW RENDERER
+    // =========================================================================
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatRichText(raw) {
+      if (!raw) return '';
+      return escapeHtml(raw)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function renderA4Preview() {
+      const sheet = document.getElementById('a4PreviewSheet');
+      if (!sheet) return;
+      const m = appState.manual;
+      const accent = '#1d4ed8';
+
+      let html = `
+        <!-- EXECUTIVE COVER HEADER -->
+        <div class="avoid-break" style="border: 1.5px solid #cbd5e1; border-top: 6px solid ${accent}; border-radius: 8px; padding: 18px 20px; margin-bottom: 22px; background: #ffffff;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="vertical-align: top; padding-right: 14px;">
+                <div style="display: inline-block; background: #eff6ff; color: ${accent}; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; margin-bottom: 9px; border: 1px solid #bfdbfe;">
+                  ${escapeHtml(m.docType || 'USER MANUAL & SOP')}
+                </div>
+                <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.25; margin: 0;">
+                  ${escapeHtml(m.moduleName || 'SchoolMitra Module User Guide')}
+                </h1>
+                <p style="font-size: 14px; color: #334155; margin: 6px 0 0 0; font-weight: 600;">
+                  SchoolMitra ERP &bull; <span style="color: ${accent};">${escapeHtml(appState.schoolName || 'SchoolMitra Client Schools')}</span>
+                </p>
+              </td>
+              <td style="vertical-align: top; text-align: right; width: 185px;">
+                <div style="font-size: 12px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 12px; border-radius: 6px; text-align: left; line-height: 1.5;">
+                  <div style="font-weight: 800; color: #0f172a; margin-bottom: 3px;">${escapeHtml(appState.versionDate)}</div>
+                  <div style="color: #475569;">Author: <strong style="color: #0f172a;">${escapeHtml(appState.preparedBy)}</strong></div>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <table style="width: 100%; border-collapse: collapse; margin-top: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px;">
+            <tr>
+              <td style="padding: 9px 12px; width: 52%; border-right: 1px solid #e2e8f0;">
+                <strong style="color: #0f172a;">Client Institution:</strong> <span style="color: #1e293b;">${escapeHtml(appState.schoolName || 'SchoolMitra Client Schools')}</span>
+              </td>
+              <td style="padding: 9px 12px; width: 48%;">
+                <strong style="color: #0f172a;">Target Users:</strong> <span style="color: #1e293b;">${escapeHtml(m.audience || 'School Staff & Admin')}</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- 1. MODULE OVERVIEW -->
+        <div class="avoid-break" style="margin-bottom: 22px;">
+          <h2 style="font-size: 16px; font-weight: 800; color: #0f172a; background: #f1f5f9; border-left: 5px solid ${accent}; padding: 8px 12px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.03em;">
+            1. Module Overview &amp; Key Highlights
+          </h2>
+          <p style="font-size: 14px; color: #1e293b; line-height: 1.7; margin: 0 0 10px 0; text-align: justify;">${formatRichText(m.overview)}</p>
+          ${(m.highlights || []).length > 0 ? `
+            <ul style="margin: 0; padding-left: 20px; font-size: 13.5px; color: #0f172a; line-height: 1.7;">
+              ${m.highlights.map((h) => `<li style="margin-bottom: 4px;">${formatRichText(h)}</li>`).join('')}
+            </ul>
+          ` : ''}
+        </div>
+      `;
+
+      // 2. ACCESS & PERMISSIONS
+      if ((m.permissions || []).length > 0) {
+        html += `
+          <div class="avoid-break" style="margin-bottom: 22px;">
+            <h2 style="font-size: 16px; font-weight: 800; color: #0f172a; background: #f1f5f9; border-left: 5px solid ${accent}; padding: 8px 12px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.03em;">
+              2. User Roles &amp; Access Requirements
+            </h2>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+              <thead>
+                <tr style="background: ${accent}; color: #ffffff; text-align: left;">
+                  <th style="padding: 9px 12px; border: 1px solid ${accent}; width: 34%;">User Role</th>
+                  <th style="padding: 9px 12px; border: 1px solid ${accent};">Required Permission / Module Access</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${m.permissions.map((p, idx) => `
+                  <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                    <td style="padding: 9px 12px; border: 1px solid #cbd5e1; font-weight: 700; color: #0f172a;">${escapeHtml(p.role)}</td>
+                    <td style="padding: 9px 12px; border: 1px solid #cbd5e1; color: #1e293b;">${escapeHtml(p.access)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      // 3. STEP-BY-STEP WORKFLOW
+      html += `
+        <div style="margin-bottom: 22px;">
+          <h2 style="font-size: 16px; font-weight: 800; color: #0f172a; background: #f1f5f9; border-left: 5px solid ${accent}; padding: 8px 12px; margin: 0 0 14px 0; text-transform: uppercase; letter-spacing: 0.03em;">
+            3. Step-by-Step Operational Guide
+          </h2>
+      `;
+
+      if ((m.steps || []).length === 0) {
+        html += `
+          <div style="padding: 28px; text-align: center; border: 1.5px dashed #cbd5e1; border-radius: 8px; color: #475569; font-size: 14px; line-height: 1.6;">
+            Upload or paste your SchoolMitra screenshot on the left and click <strong>"Generate Complete User Manual"</strong> to populate step-by-step instructions and screen field tables here.
+          </div>
+        `;
+      } else {
+        m.steps.forEach((step, idx) => {
+          html += `
+            <div class="doc-step-card" style="margin-bottom: 20px; padding: 16px 18px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff;">
+              <div class="avoid-break">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
+                  <tr>
+                    <td style="width: 74px; vertical-align: middle;">
+                      <span style="display: inline-block; background: ${accent}; color: #ffffff; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 4px;">STEP ${idx + 1}</span>
+                    </td>
+                    <td style="vertical-align: middle;">
+                      <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.35;">${escapeHtml(step.title)}</h3>
+                    </td>
+                  </tr>
+                </table>
+
+                ${step.navPath ? `
+                  <div style="display: inline-block; background: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a; font-size: 12.5px; font-family: 'JetBrains Mono', monospace; padding: 5px 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>Navigation:</strong> ${escapeHtml(step.navPath)}
+                  </div>
+                ` : ''}
+
+                <p style="font-size: 14px; color: #0f172a; line-height: 1.75; margin: 4px 0 12px 0; text-align: justify;">
+                  ${formatRichText(step.instructions)}
+                </p>
+              </div>
+          `;
+
+          if (step.fields && step.fields.length > 0) {
+            html += `
+              <table class="avoid-break" style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0 12px 0;">
+                <thead>
+                  <tr style="background: #f1f5f9; color: #0f172a; text-align: left;">
+                    <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 28%;">Screen Field / Button</th>
+                    <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 19%;">Requirement</th>
+                    <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Description &amp; Usage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${step.fields.map((f, fIdx) => `
+                    <tr style="background: ${fIdx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                      <td style="padding: 8px 10px; border: 1px solid #cbd5e1; font-weight: 700; color: #0f172a;">${escapeHtml(f.name)}</td>
+                      <td style="padding: 8px 10px; border: 1px solid #cbd5e1; color: ${String(f.required).toLowerCase().includes('mandat') ? '#b91c1c' : '#334155'}; font-weight: 700;">${escapeHtml(f.required)}</td>
+                      <td style="padding: 8px 10px; border: 1px solid #cbd5e1; color: #1e293b; line-height: 1.55;">${escapeHtml(f.desc)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          }
+
+          if (step.tip) {
+            html += `
+              <div class="avoid-break" style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 9px 13px; border-radius: 5px; margin: 10px 0; font-size: 13px; color: #1e3a8a; line-height: 1.6;">
+                <strong>PRO TIP / NOTE:</strong> ${escapeHtml(step.tip)}
+              </div>
+            `;
+          }
+
+          if (step.image) {
+            html += `
+              <div class="avoid-break" style="margin: 12px 0 4px 0; text-align: center;">
+                <div style="border: 1px solid #cbd5e1; padding: 6px; background: #f8fafc; border-radius: 6px;">
+                  <img src="${step.image}" alt="${escapeHtml(step.caption)}" style="width: 100%; max-height: 155mm; object-fit: contain; display: block; margin: 0 auto; border-radius: 4px;" />
+                </div>
+                ${step.caption ? `<div style="font-size: 12.5px; color: #475569; font-style: italic; margin-top: 6px;">${escapeHtml(step.caption)}</div>` : ''}
+              </div>
+            `;
+          }
+
+          html += `</div>`;
+        });
+      }
+
+      html += `</div>`;
+
+      // 4. IMPORTANT NOTES
+      if ((m.notes || []).length > 0) {
+        html += `
+          <div class="avoid-break" style="margin-bottom: 22px; background: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; border-radius: 6px; padding: 14px 16px;">
+            <h2 style="font-size: 14.5px; font-weight: 800; color: #92400e; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.03em;">
+              4. Important Operational Guidelines
+            </h2>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13.5px; color: #78350f; line-height: 1.7;">
+              ${m.notes.map((n) => `<li style="margin-bottom: 4px;">${formatRichText(n)}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      // FOOTER SIGN-OFF
+      html += `
+        <div class="avoid-break" style="margin-top: 24px; padding-top: 14px; border-top: 2px solid #cbd5e1; font-size: 12.5px; color: #334155; line-height: 1.6;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="width: 50%; vertical-align: top;">
+                <strong style="color: #0f172a;">Prepared By:</strong> ${escapeHtml(appState.preparedBy)} (SchoolMitra ERP)<br/>
+                Document Version: ${escapeHtml(appState.versionDate)}
+              </td>
+              <td style="width: 50%; vertical-align: top; text-align: right;">
+                <strong style="color: #0f172a;">Issued To:</strong> ${escapeHtml(appState.schoolName || 'SchoolMitra Client Schools')}<br/>
+                SchoolMitra Implementation &amp; Support Team
+              </td>
+            </tr>
+          </table>
+        </div>
+      `;
+
+      sheet.innerHTML = html;
+    }
+
+    // =========================================================================
+    // DIRECT PDF (.PDF) & WORD (.DOC) EXPORTS
+    // =========================================================================
+    async function exportToPdfFile() {
+      renderA4Preview();
+      const sheet = document.getElementById('a4PreviewSheet');
+      const btn = document.getElementById('btnDownloadPdf');
+      if (!sheet) return;
+
+      if (typeof window.html2pdf === 'undefined') {
+        showToast('Opening print dialog to Save as PDF...', 'warning');
+        window.print();
+        return;
+      }
+
+      const safeName = (appState.manual.moduleName || 'SchoolMitra_User_Manual').replace(/[^a-z0-9]+/gi, '_');
+
+      // Temporarily reset zoom and border styling for crisp 1:1 A4 PDF capture
+      const prevTransform = sheet.style.transform;
+      const prevShadow = sheet.style.boxShadow;
+      const prevBorder = sheet.style.border;
+      const prevPadding = sheet.style.padding;
+
+      sheet.style.transform = 'none';
+      sheet.style.boxShadow = 'none';
+      sheet.style.border = 'none';
+      sheet.style.padding = '0';
+
+      if (btn) btn.disabled = true;
+      showToast('Generating A4 PDF file...');
+
+      const opt = {
+        margin: [5, 5, 5, 5],
+        filename: `${safeName}.pdf`,
+        image: { type: 'jpeg', quality: 0.96 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        },
+        pagebreak: {
+          mode: ['css', 'legacy'],
+          avoid: ['.avoid-break', '.doc-step-card', 'tr', 'img']
+        }
+      };
+
+      try {
+        await window.html2pdf().set(opt).from(sheet).save();
+        showToast('A4 PDF downloaded successfully!');
+      } catch (err) {
+        console.error('PDF export error:', err);
+        showToast('PDF generator fallback—use Save as PDF in print window.', 'warning');
+        window.print();
+      } finally {
+        sheet.style.transform = prevTransform;
+        sheet.style.boxShadow = prevShadow;
+        sheet.style.border = prevBorder;
+        sheet.style.padding = prevPadding;
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function exportToWordDoc() {
+      renderA4Preview();
+      const previewEl = document.getElementById('a4PreviewSheet');
+      const contentHtml = previewEl ? previewEl.innerHTML : '';
+      const title = escapeHtml(appState.manual.moduleName || 'SchoolMitra User Manual');
+
+      const wordDocument = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:w="urn:schemas-microsoft-com:office:word"
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="utf-8">
+          <title>${title}</title>
+          <style>
+            @page { size: A4 portrait; margin: 5mm; }
+            body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11.5pt; color: #0f172a; line-height: 1.6; margin: 0; padding: 5mm; }
+            table { border-collapse: collapse; width: 100%; }
+            img { max-width: 100%; height: auto; }
+          </style>
+        </head>
+        <body>${contentHtml}</body>
+        </html>
+      `;
+
+      const blob = new Blob(['\ufeff', wordDocument], { type: 'application/msword;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const safeName = (appState.manual.moduleName || 'SchoolMitra_User_Manual').replace(/[^a-z0-9]+/gi, '_');
+      link.href = url;
+      link.download = `${safeName}.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('MS Word (.doc) manual downloaded!');
+    }
+
+    function switchMobileTab(tab) {
+      const editor = document.getElementById('editorPane');
+      const preview = document.getElementById('previewPane');
+      const btnEd = document.getElementById('btnMobileEditor');
+      const btnPr = document.getElementById('btnMobilePreview');
+      if (!editor || !preview) return;
+
+      if (tab === 'editor') {
+        editor.classList.remove('hidden');
+        preview.classList.add('hidden');
+        btnEd.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs';
+        btnPr.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-600';
+      } else {
+        editor.classList.add('hidden');
+        preview.classList.remove('hidden');
+        preview.classList.add('flex');
+        btnPr.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs';
+        btnEd.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-600';
+        renderA4Preview();
+      }
+    }
+
+    function setPreviewZoom(scale) {
+      const sheet = document.getElementById('a4PreviewSheet');
+      if (sheet) {
+        sheet.style.transform = `scale(${scale})`;
+        sheet.style.transformOrigin = 'top center';
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toastBox');
+      const msgEl = document.getElementById('toastMessage');
+      const iconEl = document.getElementById('toastIcon');
+      if (!toast || !msgEl || !iconEl) return;
+
+      msgEl.textContent = msg;
+      iconEl.setAttribute('data-lucide', type === 'warning' ? 'alert-triangle' : 'check-circle-2');
+      iconEl.className = `w-4 h-4 shrink-0 ${type === 'warning' ? 'text-amber-400' : 'text-emerald-400'}`;
+      refreshIcons();
+
+      toast.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+  </script>
+</body>
+</html>
