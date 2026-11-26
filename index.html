@@ -550,6 +550,55 @@
     <span id="toastMessage">Done</span>
   </div>
 
+  <!-- MANUAL PRIVACY MASK & DUMMY TEXT OVERLAY MODAL -->
+  <div id="privacyMaskModal" class="no-print hidden fixed inset-0 z-50 bg-slate-900/75 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-slate-50">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900">Mask / Replace Sensitive Student Data on Screenshot</h3>
+          <p class="text-xs text-slate-600">Drag across any student name, phone number, or school name to cover it with clean dummy data or blur.</p>
+        </div>
+        <button type="button" onclick="closePrivacyMaskModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 cursor-pointer">Close</button>
+      </div>
+
+      <!-- MASK TOOLBAR -->
+      <div class="px-5 py-2.5 bg-white border-b border-slate-200 flex flex-wrap items-center gap-3 text-xs">
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-slate-700">Tool:</span>
+          <select id="maskModeSelect" class="px-2.5 py-1.5 rounded-lg border border-slate-300 font-semibold bg-slate-50">
+            <option value="dummy">White Box + Dummy Text</option>
+            <option value="blur">Soft Blur / Pixelate</option>
+            <option value="solid">Clean Whiteout Box</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1.5 flex-1 min-w-[200px]">
+          <span class="font-bold text-slate-700">Dummy Label:</span>
+          <input type="text" id="maskDummyLabelInput" value="Aarav Sharma" placeholder="e.g. Aarav Sharma / 9876543210 / Demo School" class="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-300 font-medium" />
+        </div>
+        <div class="flex items-center gap-1">
+          <button type="button" onclick="document.getElementById('maskDummyLabelInput').value='Aarav Sharma'" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-semibold cursor-pointer">Student</button>
+          <button type="button" onclick="document.getElementById('maskDummyLabelInput').value='9876543210'" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-semibold cursor-pointer">Phone</button>
+          <button type="button" onclick="document.getElementById('maskDummyLabelInput').value='SM-2026-001'" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-semibold cursor-pointer">Adm No.</button>
+          <button type="button" onclick="document.getElementById('maskDummyLabelInput').value='Demo Public School'" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-semibold cursor-pointer">School</button>
+        </div>
+        <button type="button" onclick="undoLastMaskBox()" class="px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-bold hover:bg-amber-100 cursor-pointer">Undo</button>
+      </div>
+
+      <!-- INTERACTIVE CANVAS -->
+      <div class="flex-1 overflow-auto bg-slate-800 p-4 flex items-center justify-center">
+        <canvas id="privacyMaskCanvas" class="max-w-full rounded shadow-lg cursor-crosshair bg-white"></canvas>
+      </div>
+
+      <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+        <span class="text-xs text-slate-500">Tip: You can draw multiple boxes before saving.</span>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closePrivacyMaskModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 cursor-pointer">Cancel</button>
+          <button type="button" onclick="applyPrivacyMaskToScreenshot()" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs cursor-pointer">Save Masked Screenshot</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
     // STATE & MULTI-MANUAL LIBRARY STORAGE
@@ -1098,21 +1147,249 @@
       }
 
       list.innerHTML = appState.screenshots.map((s, idx) => `
-        <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-          <img src="${s.image}" alt="Screen ${idx + 1}" class="w-16 h-12 object-cover rounded-lg border border-slate-300 shrink-0 bg-white" />
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between gap-2 mb-1">
-              <span class="text-xs font-extrabold text-blue-700">Screen ${idx + 1}</span>
-              <div class="flex items-center gap-1">
-                <button type="button" onclick="moveScreenshot(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up" class="px-1.5 py-0.5 text-xs font-bold rounded bg-white border border-slate-300 text-slate-700 disabled:opacity-40 cursor-pointer">&uarr;</button>
-                <button type="button" onclick="moveScreenshot(${idx}, 1)" ${idx === appState.screenshots.length - 1 ? 'disabled' : ''} title="Move Down" class="px-1.5 py-0.5 text-xs font-bold rounded bg-white border border-slate-300 text-slate-700 disabled:opacity-40 cursor-pointer">&darr;</button>
-                <button type="button" onclick="removeScreenshot(${idx})" title="Remove Screenshot" class="px-1.5 py-0.5 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 cursor-pointer">&times;</button>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <div class="flex items-center gap-3">
+            <img src="${s.image}" alt="Screen ${idx + 1}" class="w-16 h-12 object-cover rounded-lg border border-slate-300 shrink-0 bg-white" />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="text-xs font-extrabold text-blue-700">Screen ${idx + 1}</span>
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="moveScreenshot(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up" class="px-1.5 py-0.5 text-xs font-bold rounded bg-white border border-slate-300 text-slate-700 disabled:opacity-40 cursor-pointer">&uarr;</button>
+                  <button type="button" onclick="moveScreenshot(${idx}, 1)" ${idx === appState.screenshots.length - 1 ? 'disabled' : ''} title="Move Down" class="px-1.5 py-0.5 text-xs font-bold rounded bg-white border border-slate-300 text-slate-700 disabled:opacity-40 cursor-pointer">&darr;</button>
+                  <button type="button" onclick="removeScreenshot(${idx})" title="Remove Screenshot" class="px-1.5 py-0.5 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 cursor-pointer">&times;</button>
+                </div>
               </div>
+              <input type="text" value="${escapeHtml(s.note || '')}" oninput="updateScreenshotNote(${idx}, this.value)" placeholder="Optional 1-line note for Screen ${idx + 1}..." class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-300 bg-white text-slate-900" />
             </div>
-            <input type="text" value="${escapeHtml(s.note || '')}" oninput="updateScreenshotNote(${idx}, this.value)" placeholder="Optional 1-line note for Screen ${idx + 1}..." class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-300 bg-white text-slate-900" />
+          </div>
+          <!-- PRIVACY / DUMMY DATA CONTROLS -->
+          <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-slate-200/80">
+            <span class="text-[11px] font-semibold text-slate-500">Hide Student/School Data:</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" id="btnAiDummy_${idx}" onclick="replaceScreenshotWithDummyData(${idx})" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 cursor-pointer">
+                AI Dummy Data
+              </button>
+              <button type="button" onclick="openPrivacyMaskModal(${idx})" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 cursor-pointer">
+                Manual Mask / Blur
+              </button>
+            </div>
           </div>
         </div>
       `).join('');
+    }
+
+    // =========================================================================
+    // PRIVACY MASKING & AI DUMMY DATA REPLACEMENT
+    // =========================================================================
+    async function replaceScreenshotWithDummyData(idx) {
+      const shot = appState.screenshots[idx];
+      if (!shot || !shot.image) return;
+
+      const btn = document.getElementById(`btnAiDummy_${idx}`);
+      const origText = btn ? btn.textContent : 'AI Dummy Data';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Anonymizing...';
+      }
+      showToast('Replacing real student & school details with dummy data...');
+
+      const match = shot.image.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+      if (!match) {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        return;
+      }
+
+      const customKey = (localStorage.getItem(KEY_STORAGE) || '').trim();
+      const apiKey = customKey || '';
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+      const payload = {
+        contents: [{
+          role: 'user',
+          parts: [
+            {
+              text: 'Edit this ERP software screenshot for a public user manual by replacing ALL real student names, parent names, admission numbers, roll numbers, mobile/phone numbers, email addresses, student photos, and specific school header names/logos with clean, realistic Indian dummy data (such as "Aarav Sharma", "Ananya Verma", "Rohan Gupta", "9876543210", "SM-2026-001", "Demo Public School"). Keep every UI button, form label, menu item, color, border, font style, and layout 100% identical to the original screenshot.'
+            },
+            {
+              inlineData: {
+                mimeType: match[1],
+                data: match[2]
+              }
+            }
+          ]
+        }],
+        generationConfig: {
+          responseModalities: ['TEXT', 'IMAGE']
+        }
+      };
+
+      try {
+        const result = await fetchWithBackoff(apiUrl, payload);
+        const imgPart = result?.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
+        if (imgPart && imgPart.inlineData && imgPart.inlineData.data) {
+          const newRaw = `data:${imgPart.inlineData.mimeType || 'image/png'};base64,${imgPart.inlineData.data}`;
+          const compressed = await compressImage(newRaw, 1400, 0.88);
+          const oldImage = shot.image;
+          shot.image = compressed;
+
+          // Also update matching step image if already generated
+          appState.manual.steps.forEach((st) => {
+            if (st.image === oldImage) st.image = compressed;
+          });
+
+          renderScreenshotsList();
+          saveState();
+          showToast('Replaced real data with dummy data!');
+        } else {
+          showToast('AI could not edit image—opening Manual Mask / Blur tool instead.', 'warning');
+          openPrivacyMaskModal(idx);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('AI image edit unavailable—use Manual Mask / Blur tool to cover sensitive fields.', 'warning');
+        openPrivacyMaskModal(idx);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = origText;
+        }
+      }
+    }
+
+    let maskTargetIdx = -1;
+    let maskBaseImg = null;
+    let maskHistory = [];
+    let isDrawingMask = false;
+    let maskStartX = 0;
+    let maskStartY = 0;
+
+    function openPrivacyMaskModal(idx) {
+      const shot = appState.screenshots[idx];
+      if (!shot) return;
+      maskTargetIdx = idx;
+      maskHistory = [];
+
+      const modal = document.getElementById('privacyMaskModal');
+      const canvas = document.getElementById('privacyMaskCanvas');
+      if (!modal || !canvas) return;
+      modal.classList.remove('hidden');
+
+      const img = new Image();
+      img.onload = function () {
+        maskBaseImg = img;
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        maskHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      };
+      img.src = shot.image;
+
+      canvas.onmousedown = (e) => startMaskDraw(e, canvas);
+      canvas.onmousemove = (e) => moveMaskDraw(e, canvas);
+      canvas.onmouseup = (e) => endMaskDraw(e, canvas);
+    }
+
+    function getCanvasCoords(e, canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
+    function startMaskDraw(e, canvas) {
+      isDrawingMask = true;
+      const pos = getCanvasCoords(e, canvas);
+      maskStartX = pos.x;
+      maskStartY = pos.y;
+    }
+
+    function moveMaskDraw(e, canvas) {
+      if (!isDrawingMask || maskHistory.length === 0) return;
+      const ctx = canvas.getContext('2d');
+      ctx.putImageData(maskHistory[maskHistory.length - 1], 0, 0);
+      const pos = getCanvasCoords(e, canvas);
+      const w = pos.x - maskStartX;
+      const h = pos.y - maskStartY;
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = Math.max(2, Math.round(canvas.width / 500));
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(maskStartX, maskStartY, w, h);
+      ctx.setLineDash([]);
+    }
+
+    function endMaskDraw(e, canvas) {
+      if (!isDrawingMask || maskHistory.length === 0) return;
+      isDrawingMask = false;
+      const ctx = canvas.getContext('2d');
+      ctx.putImageData(maskHistory[maskHistory.length - 1], 0, 0);
+
+      const pos = getCanvasCoords(e, canvas);
+      const x = Math.min(maskStartX, pos.x);
+      const y = Math.min(maskStartY, pos.y);
+      const w = Math.abs(pos.x - maskStartX);
+      const h = Math.abs(pos.y - maskStartY);
+      if (w < 6 || h < 6) return;
+
+      const mode = (document.getElementById('maskModeSelect') || {}).value || 'dummy';
+      const label = ((document.getElementById('maskDummyLabelInput') || {}).value || '').trim();
+
+      if (mode === 'blur') {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.clip();
+        ctx.filter = 'blur(10px)';
+        ctx.drawImage(canvas, 0, 0);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, w, h);
+        if (mode === 'dummy' && label) {
+          const fontSize = Math.max(12, Math.min(26, Math.round(h * 0.62)));
+          ctx.font = `600 ${fontSize}px Inter, Arial, sans-serif`;
+          ctx.fillStyle = '#1e293b';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, x + 6, y + h / 2, Math.max(10, w - 10));
+        }
+      }
+
+      maskHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    }
+
+    function undoLastMaskBox() {
+      if (maskHistory.length <= 1) return;
+      maskHistory.pop();
+      const canvas = document.getElementById('privacyMaskCanvas');
+      if (canvas) {
+        canvas.getContext('2d').putImageData(maskHistory[maskHistory.length - 1], 0, 0);
+      }
+    }
+
+    function closePrivacyMaskModal() {
+      const modal = document.getElementById('privacyMaskModal');
+      if (modal) modal.classList.add('hidden');
+      maskTargetIdx = -1;
+    }
+
+    function applyPrivacyMaskToScreenshot() {
+      const canvas = document.getElementById('privacyMaskCanvas');
+      if (!canvas || maskTargetIdx < 0 || !appState.screenshots[maskTargetIdx]) return;
+      const oldImage = appState.screenshots[maskTargetIdx].image;
+      const updated = canvas.toDataURL('image/jpeg', 0.88);
+      appState.screenshots[maskTargetIdx].image = updated;
+
+      appState.manual.steps.forEach((st) => {
+        if (st.image === oldImage) st.image = updated;
+      });
+
+      closePrivacyMaskModal();
+      renderScreenshotsList();
+      saveState();
+      showToast('Sensitive student/school data masked on screenshot!');
     }
 
     // =========================================================================
