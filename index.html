@@ -140,8 +140,13 @@
 
     <!-- RIGHT EXPORT ACTIONS -->
     <div class="flex flex-wrap items-center gap-2">
-      <button type="button" onclick="resetWorkspace()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200/70 flex items-center gap-1.5 transition-colors cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="rotate-ccw" aria-hidden="true" class="lucide lucide-rotate-ccw w-4 h-4"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+      <button type="button" onclick="openSavedLibraryView()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 flex items-center gap-1.5 transition-colors cursor-pointer">
+        <i data-lucide="folder-archive" class="w-4 h-4"></i>
+        <span>Saved Manuals (<span id="savedManualsCount">1</span>)</span>
+      </button>
+
+      <button type="button" onclick="createNewManualRecord()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200/70 flex items-center gap-1.5 transition-colors cursor-pointer">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
         <span>New Manual</span>
       </button>
 
@@ -159,24 +164,66 @@
 
   <!-- UNIVERSAL VIEW SWITCHER (DESKTOP + MOBILE) -->
   <div class="no-print bg-slate-200/80 px-4 py-1.5 flex items-center justify-center border-b border-slate-300">
-    <div class="w-full max-w-2xl flex gap-1.5 bg-slate-300/70 p-1 rounded-xl">
+    <div class="w-full max-w-3xl flex gap-1.5 bg-slate-300/70 p-1 rounded-xl">
       <button type="button" id="btnViewSplit" onclick="switchWorkspaceView('split')" class="hidden lg:flex flex-1 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-xs items-center justify-center gap-1.5 cursor-pointer transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="columns-2" aria-hidden="true" class="lucide lucide-columns-2 w-4 h-4"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M12 3v18"></path></svg>
+        <i data-lucide="columns-2" class="w-4 h-4"></i>
         <span>Split View</span>
       </button>
       <button type="button" id="btnViewEditor" onclick="switchWorkspaceView('editor')" class="flex-1 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-bold bg-white lg:bg-transparent text-slate-900 lg:text-slate-600 shadow-xs lg:shadow-none flex items-center justify-center gap-1.5 cursor-pointer transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="upload" aria-hidden="true" class="lucide lucide-upload w-4 h-4"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>
+        <i data-lucide="upload" class="w-4 h-4"></i>
         <span>1. Upload &amp; Generate</span>
       </button>
       <button type="button" id="btnViewPreview" onclick="switchWorkspaceView('preview')" class="flex-1 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-bold text-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-check-2" aria-hidden="true" class="lucide lucide-file-check-2 w-4 h-4"><path d="M10.5 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v6"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="m14 20 2 2 4-4"></path></svg>
-        <span>2. Ready User Manual (Full Page)</span>
+        <i data-lucide="file-check-2" class="w-4 h-4"></i>
+        <span>2. Ready User Manual</span>
+      </button>
+      <button type="button" id="btnViewLibrary" onclick="switchWorkspaceView('library')" class="flex-1 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-bold text-indigo-700 flex items-center justify-center gap-1.5 cursor-pointer transition-all">
+        <i data-lucide="library" class="w-4 h-4"></i>
+        <span>3. Saved Manuals (<span id="savedTabCount">1</span>)</span>
       </button>
     </div>
   </div>
 
   <!-- MAIN DUAL-PANE WORKSPACE -->
   <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+    <!-- DEDICATED SAVED MANUALS LIBRARY PAGE -->
+    <div id="libraryPane" class="no-print hidden w-full bg-slate-100 overflow-y-auto p-4 sm:p-8">
+      <div class="max-w-5xl mx-auto space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="folder-open" class="w-6 h-6 text-indigo-600"></i>
+              <span>Saved Module User Manuals</span>
+            </h2>
+            <p class="text-sm text-slate-600 mt-1">All your prepared module guides are safely stored here. Open any manual anytime to edit, add screenshots, or re-export to Word/PDF.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <label class="px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-800 border border-slate-300 hover:bg-slate-200 flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+              <span>Import Backup (.json)</span>
+              <input type="file" accept=".json,application/json" onchange="importLibraryBackup(this.files)" class="hidden" />
+            </label>
+            <button type="button" onclick="exportAllManualsBackup()" class="px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-800 border border-slate-300 hover:bg-slate-200 flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="hard-drive-download" class="w-4 h-4"></i>
+              <span>Backup All (.json)</span>
+            </button>
+            <button type="button" onclick="createNewManualRecord()" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-blue-600 text-white hover:bg-blue-700 shadow-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Create New Module Manual</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SEARCH & FILTER BAR -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="text" id="librarySearchInput" oninput="renderSavedLibrary()" placeholder="Search saved manuals by module title, school name, or step..." class="flex-1 px-4 py-2.5 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-blue-500" />
+        </div>
+
+        <!-- SAVED MANUAL CARDS GRID -->
+        <div id="savedManualsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-10"></div>
+      </div>
+    </div>
 
     <!-- LEFT PANEL: ULTRA-SIMPLE 2-STEP INPUT -->
     <div id="editorPane" class="no-print w-full lg:w-[44%] xl:w-[42%] bg-slate-50 border-r border-slate-200 overflow-y-auto p-4 sm:p-6 space-y-5">
@@ -505,12 +552,15 @@
 
   <script>
     // =========================================================================
-    // STATE & STORAGE
+    // STATE & MULTI-MANUAL LIBRARY STORAGE
     // =========================================================================
     const STORAGE_KEY = 'schoolmitra_simple_manual_v2';
+    const LIBRARY_STORAGE_KEY = 'schoolmitra_manuals_library_v1';
     const KEY_STORAGE = 'schoolmitra_gemini_key_v2';
 
     const DEFAULT_STATE = {
+      id: 'manual_default',
+      updatedAt: Date.now(),
       shortInstruction: '',
       schoolName: 'SchoolMitra Client Schools',
       preparedBy: 'Anurag Jaiswal',
@@ -555,39 +605,115 @@
     };
 
     let appState = null;
+    let manualsLibrary = [];
+    let activeManualId = null;
+
+    function createFreshManualObject() {
+      const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      fresh.id = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+      fresh.updatedAt = Date.now();
+      return fresh;
+    }
+
+    function loadLibraryFromStorage() {
+      try {
+        const rawLib = localStorage.getItem(LIBRARY_STORAGE_KEY);
+        if (rawLib) {
+          const parsedLib = JSON.parse(rawLib);
+          if (Array.isArray(parsedLib.manuals) && parsedLib.manuals.length > 0) {
+            manualsLibrary = parsedLib.manuals;
+            activeManualId = parsedLib.activeId || manualsLibrary[0].id;
+            const found = manualsLibrary.find((m) => m.id === activeManualId) || manualsLibrary[0];
+            activeManualId = found.id;
+            return normalizeManualState(found);
+          }
+        }
+        // Migrate existing single manual if present
+        const legacySaved = localStorage.getItem(STORAGE_KEY);
+        const initialManual = legacySaved ? normalizeManualState(JSON.parse(legacySaved)) : createFreshManualObject();
+        if (!initialManual.id) initialManual.id = 'manual_' + Date.now();
+        initialManual.updatedAt = initialManual.updatedAt || Date.now();
+        manualsLibrary = [initialManual];
+        activeManualId = initialManual.id;
+        persistLibrary();
+        return initialManual;
+      } catch (e) {
+        const fallback = createFreshManualObject();
+        manualsLibrary = [fallback];
+        activeManualId = fallback.id;
+        return fallback;
+      }
+    }
+
+    function normalizeManualState(obj) {
+      const base = createFreshManualObject();
+      const merged = Object.assign(base, obj || {});
+      if (!merged.hiddenSections) {
+        merged.hiddenSections = JSON.parse(JSON.stringify(DEFAULT_STATE.hiddenSections));
+      }
+      if (!Array.isArray(merged.metaCells)) {
+        merged.metaCells = JSON.parse(JSON.stringify(DEFAULT_STATE.metaCells));
+      }
+      if (!merged.platformName) {
+        merged.platformName = DEFAULT_STATE.platformName;
+      }
+      if (!merged.manual) {
+        merged.manual = JSON.parse(JSON.stringify(DEFAULT_STATE.manual));
+      }
+      return merged;
+    }
+
+    function persistLibrary() {
+      try {
+        appState.updatedAt = Date.now();
+        const idx = manualsLibrary.findIndex((m) => m.id === activeManualId);
+        if (idx >= 0) {
+          manualsLibrary[idx] = JSON.parse(JSON.stringify(appState));
+        } else {
+          manualsLibrary.unshift(JSON.parse(JSON.stringify(appState)));
+        }
+        localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify({
+          activeId: activeManualId,
+          manuals: manualsLibrary
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        showToast('Browser storage is full—click "Backup All (.json)" in Saved Manuals or download Word (.doc)!', 'warning');
+      }
+      updateLibraryBadges();
+    }
+
+    function updateLibraryBadges() {
+      const count = manualsLibrary.length;
+      const b1 = document.getElementById('savedManualsCount');
+      const b2 = document.getElementById('savedTabCount');
+      if (b1) b1.textContent = count;
+      if (b2) b2.textContent = count;
+    }
 
     window.onload = function () {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        appState = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_STATE));
-        if (!appState.hiddenSections) {
-          appState.hiddenSections = JSON.parse(JSON.stringify(DEFAULT_STATE.hiddenSections));
-        }
-        if (!Array.isArray(appState.metaCells)) {
-          appState.metaCells = JSON.parse(JSON.stringify(DEFAULT_STATE.metaCells));
-        }
-        if (!appState.platformName) {
-          appState.platformName = DEFAULT_STATE.platformName;
-        }
-      } catch (e) {
-        appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
-      }
+      appState = loadLibraryFromStorage();
 
       const savedKey = localStorage.getItem(KEY_STORAGE) || '';
       const keyEl = document.getElementById('customApiKeyInput');
       if (keyEl) keyEl.value = savedKey;
 
+      syncWorkspaceInputsFromState();
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      renderA4Preview();
+      renderSavedLibrary();
+      updateLibraryBadges();
+      refreshIcons();
+    };
+
+    function syncWorkspaceInputsFromState() {
       const instEl = document.getElementById('shortInstructionInput');
       if (instEl) instEl.value = appState.shortInstruction || '';
 
       const schoolEl = document.getElementById('schoolNameInput');
       if (schoolEl) schoolEl.value = appState.schoolName || 'SchoolMitra Client Schools';
-
-      renderScreenshotsList();
-      renderFineTuneEditor();
-      renderA4Preview();
-      refreshIcons();
-    };
+    }
 
     function refreshIcons() {
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -596,12 +722,9 @@
     }
 
     function saveState() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-      } catch (e) {
-        showToast('Browser storage full—download your Word (.doc) file now!', 'warning');
-      }
+      persistLibrary();
       renderA4Preview();
+      renderSavedLibrary();
     }
 
     function saveCustomKey(val) {
@@ -624,16 +747,211 @@
       showToast(`Client set to ${name}`);
     }
 
-    function resetWorkspace() {
-      appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
-      const instEl = document.getElementById('shortInstructionInput');
-      const schoolEl = document.getElementById('schoolNameInput');
-      if (instEl) instEl.value = '';
-      if (schoolEl) schoolEl.value = appState.schoolName;
+    function createNewManualRecord() {
+      // Save current manual first so nothing is lost
+      persistLibrary();
+
+      // Create a brand-new blank manual record
+      const fresh = createFreshManualObject();
+      appState = fresh;
+      activeManualId = fresh.id;
+      manualsLibrary.unshift(JSON.parse(JSON.stringify(fresh)));
+      persistLibrary();
+
+      syncWorkspaceInputsFromState();
       renderScreenshotsList();
       renderFineTuneEditor();
-      saveState();
-      showToast('Started a fresh manual');
+      renderA4Preview();
+      renderSavedLibrary();
+      switchWorkspaceView(window.innerWidth >= 1024 ? 'split' : 'editor');
+      showToast('Previous manual saved! Started a brand-new module manual.');
+    }
+
+    function openSavedLibraryView() {
+      persistLibrary();
+      renderSavedLibrary();
+      switchWorkspaceView('library');
+    }
+
+    function loadSavedManual(manualId) {
+      persistLibrary();
+      const target = manualsLibrary.find((m) => m.id === manualId);
+      if (!target) return;
+      appState = normalizeManualState(JSON.parse(JSON.stringify(target)));
+      activeManualId = appState.id;
+      persistLibrary();
+
+      syncWorkspaceInputsFromState();
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      renderA4Preview();
+      renderSavedLibrary();
+      switchWorkspaceView(window.innerWidth >= 1024 ? 'split' : 'preview');
+      showToast(`Opened "${appState.manual.moduleName}" for editing`);
+    }
+
+    function duplicateSavedManual(manualId) {
+      const source = manualsLibrary.find((m) => m.id === manualId);
+      if (!source) return;
+      const copy = normalizeManualState(JSON.parse(JSON.stringify(source)));
+      copy.id = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+      copy.updatedAt = Date.now();
+      copy.manual.moduleName = `${copy.manual.moduleName} (Copy)`;
+      manualsLibrary.unshift(copy);
+      appState = copy;
+      activeManualId = copy.id;
+      persistLibrary();
+      syncWorkspaceInputsFromState();
+      renderScreenshotsList();
+      renderFineTuneEditor();
+      renderA4Preview();
+      renderSavedLibrary();
+      showToast('Duplicated manual! You can customize this copy safely.');
+    }
+
+    function deleteSavedManual(manualId) {
+      if (manualsLibrary.length <= 1) {
+        showToast('At least 1 manual must remain in the library. Click "New Manual" first.', 'warning');
+        return;
+      }
+      manualsLibrary = manualsLibrary.filter((m) => m.id !== manualId);
+      if (activeManualId === manualId) {
+        const next = manualsLibrary[0];
+        appState = normalizeManualState(JSON.parse(JSON.stringify(next)));
+        activeManualId = appState.id;
+        syncWorkspaceInputsFromState();
+        renderScreenshotsList();
+        renderFineTuneEditor();
+        renderA4Preview();
+      }
+      persistLibrary();
+      renderSavedLibrary();
+      showToast('Deleted manual from library');
+    }
+
+    function exportAllManualsBackup() {
+      persistLibrary();
+      const dataStr = JSON.stringify({ exportedAt: new Date().toISOString(), manuals: manualsLibrary }, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SchoolMitra_All_User_Manuals_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Exported backup of ${manualsLibrary.length} saved manual(s)!`);
+    }
+
+    function importLibraryBackup(files) {
+      const file = files && files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const incoming = Array.isArray(parsed.manuals) ? parsed.manuals : (parsed.manual ? [parsed] : []);
+          if (!incoming.length) {
+            showToast('No valid manuals found in that backup file.', 'warning');
+            return;
+          }
+          incoming.forEach((item) => {
+            const norm = normalizeManualState(item);
+            norm.id = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+            manualsLibrary.unshift(norm);
+          });
+          appState = normalizeManualState(JSON.parse(JSON.stringify(manualsLibrary[0])));
+          activeManualId = appState.id;
+          persistLibrary();
+          syncWorkspaceInputsFromState();
+          renderScreenshotsList();
+          renderFineTuneEditor();
+          renderA4Preview();
+          renderSavedLibrary();
+          showToast(`Imported ${incoming.length} manual(s) into Saved Manuals!`);
+        } catch (err) {
+          showToast('Invalid JSON backup file.', 'warning');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function renderSavedLibrary() {
+      const grid = document.getElementById('savedManualsGrid');
+      if (!grid) return;
+      const query = ((document.getElementById('librarySearchInput') || {}).value || '').toLowerCase().trim();
+
+      const filtered = manualsLibrary.filter((item) => {
+        if (!query) return true;
+        const title = (item.manual && item.manual.moduleName || '').toLowerCase();
+        const school = (item.schoolName || '').toLowerCase();
+        const overview = (item.manual && item.manual.overview || '').toLowerCase();
+        return title.includes(query) || school.includes(query) || overview.includes(query);
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-600">
+            No saved manuals matched your search.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map((item) => {
+        const isCurrent = item.id === activeManualId;
+        const title = escapeHtml((item.manual && item.manual.moduleName) || 'Untitled Module Guide');
+        const school = escapeHtml(item.schoolName || 'SchoolMitra Client Schools');
+        const stepCount = (item.manual && Array.isArray(item.manual.steps)) ? item.manual.steps.length : 0;
+        const shotCount = Array.isArray(item.screenshots) ? item.screenshots.length : 0;
+        const firstThumb = (item.manual && item.manual.steps && item.manual.steps.find((s) => s.image)?.image)
+          || (item.screenshots && item.screenshots[0]?.image)
+          || '';
+        const dateLabel = item.updatedAt ? new Date(item.updatedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+        return `
+          <div class="bg-white rounded-2xl border ${isCurrent ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200'} shadow-xs p-5 flex flex-col justify-between gap-4 transition-all">
+            <div class="flex items-start gap-3.5">
+              ${firstThumb
+                ? `<img src="${firstThumb}" alt="Preview" class="w-20 h-16 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-50" />`
+                : `<div class="w-20 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-400 shrink-0"><i data-lucide="file-text" class="w-7 h-7"></i></div>`
+              }
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  ${isCurrent ? '<span class="px-2 py-0.5 text-[11px] font-extrabold uppercase bg-blue-600 text-white rounded-md">Currently Open</span>' : ''}
+                  <span class="text-xs font-semibold text-slate-500">${dateLabel}</span>
+                </div>
+                <h3 class="text-base font-extrabold text-slate-900 mt-1 line-clamp-2">${title}</h3>
+                <p class="text-xs font-semibold text-indigo-700 mt-0.5">${school}</p>
+                <p class="text-xs text-slate-500 mt-1">${stepCount} Step(s) • ${shotCount} Screenshot(s)</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+              <button type="button" onclick="loadSavedManual('${item.id}')" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                <span>Open &amp; Edit Manual</span>
+              </button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="duplicateSavedManual('${item.id}')" title="Duplicate Manual" class="px-2.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Clone</span>
+                </button>
+                <button type="button" onclick="deleteSavedManual('${item.id}')" title="Delete Manual" class="px-2.5 py-2 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      refreshIcons();
+    }
+
+    function resetWorkspace() {
+      createNewManualRecord();
     }
 
     // =========================================================================
@@ -769,7 +1087,9 @@
     function renderScreenshotsList() {
       const list = document.getElementById('screenshotsList');
       const badge = document.getElementById('shotBadge');
-      if (badge) badge.textContent = `${appState.screenshots.length} Screenshot${appState.screenshots.length === 1 ? '' : 's'}`;
+      if (badge) {
+        badge.textContent = `${appState.screenshots.length} Screenshot${appState.screenshots.length === 1 ? '' : 's'}`;
+      }
       if (!list) return;
 
       if (appState.screenshots.length === 0) {
@@ -778,24 +1098,21 @@
       }
 
       list.innerHTML = appState.screenshots.map((s, idx) => `
-        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <div class="relative w-16 h-12 rounded-lg overflow-hidden border border-slate-300 bg-white shrink-0">
-            <img src="${s.image}" alt="Screen ${idx + 1}" class="w-full h-full object-cover" />
-            <span class="absolute top-0.5 left-0.5 bg-slate-900/85 text-white text-[10px] font-bold px-1.5 rounded">${idx + 1}</span>
-          </div>
+        <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+          <img src="${s.image}" alt="Screen ${idx + 1}" class="w-16 h-12 object-cover rounded-lg border border-slate-300 shrink-0 bg-white" />
           <div class="flex-1 min-w-0">
-            <div class="text-xs font-bold text-slate-800 truncate">Screen ${idx + 1}</div>
-            <input type="text" value="${escapeHtml(s.note)}" oninput="updateScreenshotNote(${idx}, this.value)" placeholder="Optional quick hint for this screen..." class="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-blue-500 text-slate-900" />
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <span class="text-xs font-extrabold text-blue-700">Screen ${idx + 1}</span>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="moveScreenshot(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up" class="px-1.5 py-0.5 text-xs font-bold rounded bg-white border border-slate-300 text-slate-700 disabled:opacity-40 cursor-pointer">&uarr;</button>
+                <button type="button" onclick="moveScreenshot(${idx}, 1)" ${idx === appState.screenshots.length - 1 ? 'disabled' : ''} title="Move Down" class="px-1.5 py-0.5 text-xs font-bold rounded bg-white border border-slate-300 text-slate-700 disabled:opacity-40 cursor-pointer">&darr;</button>
+                <button type="button" onclick="removeScreenshot(${idx})" title="Remove Screenshot" class="px-1.5 py-0.5 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 cursor-pointer">&times;</button>
+              </div>
+            </div>
+            <input type="text" value="${escapeHtml(s.note || '')}" oninput="updateScreenshotNote(${idx}, this.value)" placeholder="Optional 1-line note for Screen ${idx + 1}..." class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-300 bg-white text-slate-900" />
           </div>
-          <div class="flex flex-col gap-0.5 shrink-0">
-            <button type="button" onclick="moveScreenshot(${idx}, -1)" title="Move Up" class="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
-            <button type="button" onclick="moveScreenshot(${idx}, 1)" title="Move Down" class="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
-          </div>
-          <button type="button" onclick="removeScreenshot(${idx})" title="Remove" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
         </div>
       `).join('');
-
-      refreshIcons();
     }
 
     // =========================================================================
@@ -1574,15 +1891,29 @@ Return ONLY valid JSON matching this exact schema:
     function switchWorkspaceView(mode) {
       const editor = document.getElementById('editorPane');
       const preview = document.getElementById('previewPane');
+      const library = document.getElementById('libraryPane');
       const btnSplit = document.getElementById('btnViewSplit');
       const btnEd = document.getElementById('btnViewEditor');
       const btnPr = document.getElementById('btnViewPreview');
-      if (!editor || !preview) return;
+      const btnLib = document.getElementById('btnViewLibrary');
+      if (!editor || !preview || !library) return;
 
       const activeClass = 'flex-1 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all';
       const inactiveClass = 'flex-1 py-1.5 px-3 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer transition-all';
 
-      if (mode === 'split') {
+      library.classList.add('hidden');
+
+      if (mode === 'library') {
+        editor.classList.add('hidden');
+        preview.classList.add('hidden');
+        preview.classList.remove('flex');
+        library.classList.remove('hidden');
+        if (btnSplit) btnSplit.className = 'hidden lg:flex ' + inactiveClass;
+        if (btnEd) btnEd.className = inactiveClass;
+        if (btnPr) btnPr.className = inactiveClass;
+        if (btnLib) btnLib.className = activeClass.replace('text-slate-900', 'text-indigo-700');
+        renderSavedLibrary();
+      } else if (mode === 'split') {
         editor.classList.remove('hidden', 'w-full', 'max-w-4xl', 'mx-auto');
         editor.classList.add('w-full', 'lg:w-[44%]', 'xl:w-[42%]');
         preview.classList.remove('hidden');
@@ -1590,6 +1921,7 @@ Return ONLY valid JSON matching this exact schema:
         if (btnSplit) btnSplit.className = 'hidden lg:flex ' + activeClass;
         if (btnEd) btnEd.className = inactiveClass;
         if (btnPr) btnPr.className = inactiveClass;
+        if (btnLib) btnLib.className = inactiveClass.replace('text-slate-600', 'text-indigo-700');
         renderA4Preview();
       } else if (mode === 'editor') {
         editor.classList.remove('hidden', 'lg:w-[44%]', 'xl:w-[42%]');
@@ -1599,6 +1931,7 @@ Return ONLY valid JSON matching this exact schema:
         if (btnSplit) btnSplit.className = 'hidden lg:flex ' + inactiveClass;
         if (btnEd) btnEd.className = activeClass;
         if (btnPr) btnPr.className = inactiveClass;
+        if (btnLib) btnLib.className = inactiveClass.replace('text-slate-600', 'text-indigo-700');
       } else if (mode === 'preview') {
         editor.classList.add('hidden');
         preview.classList.remove('hidden');
@@ -1606,6 +1939,7 @@ Return ONLY valid JSON matching this exact schema:
         if (btnSplit) btnSplit.className = 'hidden lg:flex ' + inactiveClass;
         if (btnEd) btnEd.className = inactiveClass;
         if (btnPr) btnPr.className = activeClass;
+        if (btnLib) btnLib.className = inactiveClass.replace('text-slate-600', 'text-indigo-700');
         renderA4Preview();
       }
     }
